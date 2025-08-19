@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}{{ question.title }} - StackIt{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1>{{ question.title }}</h1>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-1 text-center">
+                <form method="POST" action="{{ url_for('vote', model='question', obj_id=question.id, action='up') }}">
+                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-arrow-up"></i>
+                    </button>
+                </form>
+                <div class="my-2">{{ question.votes }}</div>
+                <form method="POST" action="{{ url_for('vote', model='question', obj_id=question.id, action='down') }}">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-arrow-down"></i>
+                    </button>
+                </form>
+            </div>
+            <div class="col-11">
+                <div class="mb-3">{{ question.body|safe }}</div>
+                <div class="mb-3">
+                    {% for tag in question.tags %}
+                    <span class="badge bg-secondary">{{ tag.name }}</span>
+                    {% endfor %}
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <a href="{{ url_for('profile', username=question.author.username) }}" class="text-decoration-none">
+                            {{ question.author.username }}
+                        </a>
+                        <small class="text-muted"> asked {{ question.created_at.strftime('%b %d, %Y at %H:%M') }}</small>
+                    </div>
+                    {% if current_user == question.author %}
+                    <div>
+                        <a href="#" class="btn btn-sm btn-outline-secondary">Edit</a>
+                        <a href="#" class="btn btn-sm btn-outline-danger">Delete</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h3 class="mb-3">{{ question.answers.count() }} Answers</h3>
+
+{% for answer in answers %}
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-1 text-center">
+                <form method="POST" action="{{ url_for('vote', model='answer', obj_id=answer.id, action='up') }}">
+                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-arrow-up"></i>
+                    </button>
+                </form>
+                <div class="my-2">{{ answer.votes }}</div>
+                <form method="POST" action="{{ url_for('vote', model='answer', obj_id=answer.id, action='down') }}">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-arrow-down"></i>
+                    </button>
+                </form>
+            </div>
+            <div class="col-11">
+                <div class="mb-3">{{ answer.body|safe }}</div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <a href="{{ url_for('profile', username=answer.author.username) }}" class="text-decoration-none">
+                            {{ answer.author.username }}
+                        </a>
+                        <small class="text-muted"> answered {{ answer.created_at.strftime('%b %d, %Y at %H:%M') }}</small>
+                    </div>
+                    {% if current_user == answer.author %}
+                    <div>
+                        <a href="#" class="btn btn-sm btn-outline-secondary">Edit</a>
+                        <a href="#" class="btn btn-sm btn-outline-danger">Delete</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% if current_user.is_authenticated %}
+<div class="card">
+    <div class="card-body">
+        <h4 class="card-title">Your Answer</h4>
+        <form method="POST" action="{{ url_for('question_detail', question_id=question.id) }}">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.body(class="form-control", rows=5) }}
+                {% if form.body.errors %}
+                <div class="invalid-feedback">
+                    {% for error in form.body.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            <div class="text-end">
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">
+    Please <a href="{{ url_for('login') }}" class="alert-link">login</a> to post an answer.
+</div>
+{% endif %}
+{% endblock %}
